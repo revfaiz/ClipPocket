@@ -1,59 +1,28 @@
 (() => {
-  /** @typedef {{ id: string, title: string, text: string, createdAt: number, updatedAt: number }} MessageNode */
-  const STORAGE_KEY = "quickMessages.nodes.v1";
-  const THEME_KEY = "quickMessages.theme.v1";
+  const QM = (window.QM = window.QM || {});
+
+  /**
+   * @typedef {{ id: string, title: string, text: string, createdAt: number, updatedAt: number }} MessageNode
+   */
 
   const gridEl = document.getElementById("grid");
   const emptyEl = document.getElementById("emptyState");
   const addBtn = document.getElementById("addNew");
   const searchEl = document.getElementById("search");
-  const toastEl = document.getElementById("toast");
-  const toggleThemeBtn = document.getElementById("toggleTheme");
-  const themeIconEl = document.getElementById("themeIcon");
-  const themeTextEl = document.getElementById("themeText");
 
   /** @type {MessageNode[]} */
   let nodes = [];
-  /** @type {number|null} */
-  let toastTimer = null;
   /** @type {string|null} */
   let dragId = null;
   let searchTerm = "";
 
-  function uid() {
-    // Collision-resistant enough for local-only usage.
-    return (
-      "n_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8)
-    );
-  }
-
-  function now() {
-    return Date.now();
-  }
-
-  function clamp(str, max) {
-    if (str.length <= max) return str;
-    return str.slice(0, max - 1) + "…";
-  }
-
-  function formatTime(ts) {
-    const d = new Date(ts);
-    return d.toLocaleString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  }
-
   function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nodes));
+    localStorage.setItem(QM.STORAGE_KEY, JSON.stringify(nodes));
   }
 
   function load() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(QM.STORAGE_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return [];
@@ -63,59 +32,11 @@
           id: String(x.id),
           title: typeof x.title === "string" ? x.title : "",
           text: typeof x.text === "string" ? x.text : "",
-          createdAt: typeof x.createdAt === "number" ? x.createdAt : now(),
-          updatedAt: typeof x.updatedAt === "number" ? x.updatedAt : now(),
+          createdAt: typeof x.createdAt === "number" ? x.createdAt : QM.now(),
+          updatedAt: typeof x.updatedAt === "number" ? x.updatedAt : QM.now(),
         }));
     } catch {
       return [];
-    }
-  }
-
-  function getTheme() {
-    const saved = localStorage.getItem(THEME_KEY);
-    if (saved === "light" || saved === "dark") return saved;
-    // Default: follow system preference
-    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-  }
-
-  function setTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem(THEME_KEY, theme);
-    const isDark = theme === "dark";
-    themeIconEl.textContent = isDark ? "☀️" : "🌙";
-    themeTextEl.textContent = isDark ? "Light" : "Dark";
-  }
-
-  function showToast(text) {
-    toastEl.textContent = text;
-    toastEl.classList.add("show");
-    if (toastTimer) window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(() => toastEl.classList.remove("show"), 900);
-  }
-
-  async function copyToClipboard(text) {
-    const clean = text ?? "";
-    if (!clean) {
-      showToast("Nothing to copy");
-      return;
-    }
-    try {
-      await navigator.clipboard.writeText(clean);
-      showToast("Copied!");
-    } catch {
-      // Fallback for older browsers / file:// restrictions.
-      const ta = document.createElement("textarea");
-      ta.value = clean;
-      ta.setAttribute("readonly", "");
-      ta.style.position = "fixed";
-      ta.style.left = "-9999px";
-      document.body.appendChild(ta);
-      ta.select();
-      const ok = document.execCommand("copy");
-      document.body.removeChild(ta);
-      showToast(ok ? "Copied!" : "Copy failed");
     }
   }
 
@@ -166,7 +87,6 @@
       dragHandle.title = "Drag to reorder";
       dragHandle.setAttribute("aria-label", "Drag handle");
       dragHandle.innerHTML = "<span aria-hidden='true'>↕</span><span>Move</span>";
-      // Keep keyboard users from triggering "click" side effects
       dragHandle.addEventListener("click", (e) => e.preventDefault());
 
       const meta = document.createElement("div");
@@ -174,9 +94,12 @@
       meta.title = "Last updated";
       meta.textContent =
         "Updated " +
-        formatTime(n.updatedAt) +
+        QM.formatTime(n.updatedAt) +
         " • " +
-        clamp((n.title ? n.title + " — " : "") + n.text.replace(/\s+/g, " "), 44);
+        QM.clamp(
+          (n.title ? n.title + " — " : "") + n.text.replace(/\s+/g, " "),
+          44
+        );
 
       const titleInput = document.createElement("input");
       titleInput.type = "text";
@@ -186,13 +109,13 @@
       titleInput.addEventListener("input", () => {
         const idx = nodes.findIndex((x) => x.id === n.id);
         if (idx < 0) return;
-        nodes[idx] = { ...nodes[idx], title: titleInput.value, updatedAt: now() };
+        nodes[idx] = { ...nodes[idx], title: titleInput.value, updatedAt: QM.now() };
         save();
         meta.textContent =
           "Updated " +
-          formatTime(nodes[idx].updatedAt) +
+          QM.formatTime(nodes[idx].updatedAt) +
           " • " +
-          clamp(
+          QM.clamp(
             (titleInput.value ? titleInput.value + " — " : "") +
               ta.value.replace(/\s+/g, " "),
             44
@@ -210,7 +133,7 @@
       copyBtn.type = "button";
       copyBtn.className = "btn small";
       copyBtn.textContent = "Copy";
-      copyBtn.addEventListener("click", () => copyToClipboard(n.text));
+      copyBtn.addEventListener("click", () => QM.copyToClipboard(n.text));
 
       const delBtn = document.createElement("button");
       delBtn.type = "button";
@@ -236,32 +159,27 @@
       ta.addEventListener("input", () => {
         const idx = nodes.findIndex((x) => x.id === n.id);
         if (idx < 0) return;
-        nodes[idx] = { ...nodes[idx], text: ta.value, updatedAt: now() };
+        nodes[idx] = { ...nodes[idx], text: ta.value, updatedAt: QM.now() };
         save();
-        // Update meta line without full render to keep cursor stable.
         meta.textContent =
           "Updated " +
-          formatTime(nodes[idx].updatedAt) +
+          QM.formatTime(nodes[idx].updatedAt) +
           " • " +
-          clamp(
+          QM.clamp(
             (titleInput.value ? titleInput.value + " — " : "") +
               ta.value.replace(/\s+/g, " "),
             44
           );
       });
 
-      // Clicking the card focuses editor for quick editing
       card.addEventListener("mousedown", (e) => {
-        // Don't steal focus from buttons.
         if (e.target instanceof HTMLElement && e.target.closest("button")) return;
         if (document.activeElement !== ta) ta.focus();
       });
 
-      // Drag and drop (HTML5)
       card.addEventListener("dragstart", (e) => {
         dragId = n.id;
         card.classList.add("dragging");
-        // Needed for Firefox
         if (e.dataTransfer) {
           e.dataTransfer.effectAllowed = "move";
           e.dataTransfer.setData("text/plain", n.id);
@@ -281,10 +199,7 @@
         reorderByDragTarget(targetId);
       });
 
-      // Ensure dragging starts from handle but still works if user drags card
-      dragHandle.addEventListener("pointerdown", () => {
-        // Some browsers will prefer dragging from handle; no-op.
-      });
+      dragHandle.addEventListener("pointerdown", () => {});
 
       card.appendChild(header);
       card.appendChild(ta);
@@ -295,42 +210,28 @@
   }
 
   function addNewNode(initialText = "") {
-    const ts = now();
-    const n = { id: uid(), title: "", text: initialText, createdAt: ts, updatedAt: ts };
+    const ts = QM.now();
+    const n = { id: QM.uid(), title: "", text: initialText, createdAt: ts, updatedAt: ts };
     nodes.unshift(n);
     save();
     render();
-    // Focus first textarea after render
     const first = gridEl.querySelector("article.card textarea");
     if (first) first.focus();
   }
 
-  function init() {
-    setTheme(getTheme());
+  QM.bootApp = function bootApp() {
     nodes = load();
     render();
     if (nodes.length === 0) addNewNode("");
 
-    addBtn.addEventListener("click", () => addNewNode(""));
-    searchEl.addEventListener("input", () => {
-      searchTerm = searchEl.value.trim();
-      render();
-    });
-
-    toggleThemeBtn.addEventListener("click", () => {
-      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-      setTheme(next);
-    });
-
-    window.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
-        e.preventDefault();
-        searchEl.focus();
-      }
-    });
-  }
-
-  init();
+    if (addBtn) addBtn.addEventListener("click", () => addNewNode(""));
+    if (searchEl) {
+      searchEl.addEventListener("input", () => {
+        searchTerm = searchEl.value.trim();
+        render();
+      });
+    }
+  };
 })();
 
 

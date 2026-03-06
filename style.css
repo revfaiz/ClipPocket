@@ -52,6 +52,91 @@ body {
   color: var(--text);
 }
 
+.authWrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.authCard {
+  width: min(520px, 100%);
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 18px 16px 16px;
+}
+
+.authTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.authTitle {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+}
+
+.authSub {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.authForm {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.authLabel {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.authInput {
+  width: 100%;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 86%, transparent);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+}
+
+.authInput:focus {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.authBtn {
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.authError {
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: color-mix(in srgb, rgba(220, 38, 38, 0.18) 70%, transparent);
+  color: color-mix(in srgb, var(--text) 65%, #dc2626);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.authHint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
 .wrap {
   max-width: 1050px;
   margin: 0 auto;
