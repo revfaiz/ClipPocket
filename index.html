@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Quick Messages</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="title">
+          <h1>Quick Messages</h1>
+          <div class="subtitle">Save & copy frequently used text</div>
+        </div>
+
+        <div class="toolbar">
+          <label class="input" title="Search messages">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="M16.2 16.2 21 21"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span class="srOnly">Search</span>
+            <input id="search" type="search" placeholder="Search…" autocomplete="off" />
+          </label>
+
+          <button id="toggleTheme" class="btn" type="button" title="Toggle dark mode">
+            <span id="themeIcon" aria-hidden="true">🌙</span>
+            <span id="themeText">Dark</span>
+          </button>
+
+          <button id="addNew" class="btn primary" type="button" title="Add a new message node">
+            + Add New Node
+          </button>
+        </div>
+      </header>
+
+      <div class="hintRow">
+        <span><span class="kbd">Ctrl</span> + <span class="kbd">K</span> focuses search</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span>Drag the <span class="kbd">↕</span> handle to reorder</span>
+        <span class="dot" aria-hidden="true"></span>
+        <span>Edits auto-save</span>
+      </div>
+
+      <main>
+        <section class="about" aria-label="How it works">
+          <h2>How it works</h2>
+          <ul>
+            <li><strong>Add</strong> a card with <strong>Add New Node</strong>.</li>
+            <li><strong>Edit</strong> by clicking inside the message box and typing/pasting.</li>
+            <li><strong>Copy</strong> with one click — you’ll see a small <strong>Copied!</strong> notice.</li>
+            <li><strong>Delete</strong> removes a card (with confirmation).</li>
+            <li><strong>Saved automatically</strong> in your browser (localStorage), so refreshing won’t erase your messages.</li>
+            <li><strong>Reorder</strong> by dragging the <span class="kbd">↕</span> handle.</li>
+            <li><strong>Search</strong> filters cards as you type.</li>
+            <li><strong>Dark mode</strong> toggles the theme and remembers your choice.</li>
+          </ul>
+        </section>
+
+        <section id="grid" class="grid" aria-live="polite"></section>
+        <div id="emptyState" class="emptyState" hidden>
+          No saved messages yet. Click <strong>Add New Node</strong> to create your first one.
+        </div>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">Copied!</div>
+    <script src="app.js"></script>
+  </body>
+</html>
+
+
