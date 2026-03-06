@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Node Canvas - Quick Messages</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .canvas-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: hidden;
+        background: var(--bg);
+        cursor: grab;
+      }
+
+      .canvas-container.grabbing {
+        cursor: grabbing;
+      }
+
+      .canvas {
+        position: absolute;
+        transform-origin: 0 0;
+        width: 5000px;
+        height: 5000px;
+      }
+
+      .node {
+        position: absolute;
+        width: 200px;
+        min-height: 120px;
+        background: var(--panel);
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        cursor: move;
+        user-select: none;
+        transition: box-shadow 0.2s, border-color 0.2s;
+      }
+
+      .node:hover {
+        box-shadow: var(--shadow);
+        border-color: var(--primary);
+      }
+
+      .node.selected {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--focus);
+      }
+
+      .node-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        background: var(--chip);
+        border-radius: 10px 10px 0 0;
+      }
+
+      .node-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text);
+        background: transparent;
+        border: none;
+        outline: none;
+        width: 120px;
+      }
+
+      .node-actions {
+        display: flex;
+        gap: 4px;
+      }
+
+      .node-btn {
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: transparent;
+        color: var(--muted);
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+
+      .node-btn:hover {
+        background: var(--chip);
+        color: var(--text);
+      }
+
+      .node-btn.connect:hover {
+        color: var(--primary);
+      }
+
+      .node-btn.delete:hover {
+        color: var(--danger);
+      }
+
+      .node-content {
+        padding: 10px;
+        font-size: 13px;
+        color: var(--muted);
+        min-height: 60px;
+      }
+
+      .node-content textarea {
+        width: 100%;
+        min-height: 50px;
+        resize: vertical;
+        border: none;
+        background: transparent;
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.4;
+        outline: none;
+      }
+
+      .node-connector {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background: var(--primary);
+        border: 2px solid var(--panel);
+        border-radius: 50%;
+        cursor: crosshair;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 10;
+      }
+
+      .node:hover .node-connector,
+      .node.connecting .node-connector {
+        opacity: 1;
+      }
+
+      .node-connector.left { left: -8px; top: 50%; transform: translateY(-50%); }
+      .node-connector.right { right: -8px; top: 50%; transform: translateY(-50%); }
+      .node-connector.top { top: -8px; left: 50%; transform: translateX(-50%); }
+      .node-connector.bottom { bottom: -8px; left: 50%; transform: translateX(-50%); }
+
+      .connection-line {
+        stroke: var(--primary);
+        stroke-width: 2;
+        fill: none;
+        pointer-events: none;
+      }
+
+      .connection-label {
+        position: absolute;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 2px 6px;
+        font-size: 11px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+
+      .zoom-controls {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 100;
+      }
+
+      .zoom-controls .btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        justify-content: center;
+        font-size: 18px;
+      }
+
+      .canvas-hint {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        color: var(--muted);
+        z-index: 50;
+      }
+
+      .add-node-btn {
+        position: fixed;
+        top: 120px;
+        right: 20px;
+        z-index: 100;
+      }
+
+      .connecting-mode {
+        cursor: crosshair !important;
+      }
+
+      .connecting-mode .node {
+        cursor: crosshair !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="wrap">
+      <header class="fixed-header">
+        <div class="header-inner">
+          <div class="title">
+            <h1>Node Canvas</h1>
+            <div class="subtitle">Visual map of your messages</div>
+          </div>
+
+          <div class="toolbar">
+            <button id="toggleTheme" class="btn" type="button" title="Toggle dark mode">
+              <span id="themeIcon" aria-hidden="true">🌙</span>
+              <span id="themeText">Dark</span>
+            </button>
+
+            <a href="notes.html" class="btn">← Notes</a>
+            <button id="logout" class="btn" type="button" title="Log out">Logout</button>
+          </div>
+        </div>
+      </header>
+
+      <button id="addNode" class="btn primary add-node-btn" type="button">
+        + Add Node
+      </button>
+
+      <div class="canvas-container" id="canvasContainer">
+        <div class="canvas" id="canvas">
+          <svg id="connectionsSvg" style="position:absolute; width:100%; height:100%; pointer-events:none;"></svg>
+        </div>
+      </div>
+
+      <div class="zoom-controls">
+        <button id="zoomIn" class="btn" type="button" title="Zoom In">+</button>
+        <button id="zoomOut" class="btn" type="button" title="Zoom Out">−</button>
+        <button id="zoomReset" class="btn" type="button" title="Reset Zoom">1:1</button>
+      </div>
+
+      <div class="canvas-hint">
+        Drag to pan • Scroll to zoom • Click connector (●) to link nodes • Drag nodes to move
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">Copied!</div>
+    <script src="helpers.js"></script>
+    <script src="canvas.js"></script>
+    <script src="auth.js"></script>
+  </body>
+</html>
+

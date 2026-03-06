@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login - Quick Messages</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Login -->
+    <div id="auth" class="authWrap">
+      <div class="authCard" role="dialog" aria-label="Login">
+        <div class="authTitleRow">
+          <div>
+            <div class="authTitle">Login</div>
+            <div class="authSub">Enter the allowed email to open your saved messages.</div>
+          </div>
+        </div>
+
+        <form id="loginForm" class="authForm" autocomplete="on">
+          <label class="authLabel" for="email">Email</label>
+          <input
+            id="email"
+            class="authInput"
+            type="email"
+            placeholder="name@example.com"
+            autocomplete="email"
+            required
+          />
+
+          <label class="authLabel" for="password">Password</label>
+          <input
+            id="password"
+            class="authInput"
+            type="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            required
+          />
+
+          <div id="loginError" class="authError" role="alert" aria-live="polite" hidden></div>
+
+          <button class="btn primary authBtn" type="submit">Sign in</button>
+          <div class="authHint">
+            This is a local-only app. Login is client-side and meant for basic gating, not strong security.
+          </div>
+        </form>
+        
+        <div class="authNav">
+          <a href="how-it-works.html" class="btn">How It Works</a>
+        </div>
+      </div>
+    </div>
+
+    <script src="helpers.js"></script>
+    <script src="auth.js"></script>
+  </body>
+</html>
+

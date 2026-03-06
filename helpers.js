@@ -5,6 +5,8 @@
   QM.STORAGE_KEY = "quickMessages.nodes.v1";
   QM.THEME_KEY = "quickMessages.theme.v1";
   QM.AUTH_KEY = "quickMessages.auth.v1";
+  QM.CONNECTIONS_KEY = "quickMessages.connections.v1";
+  QM.NODE_POSITIONS_KEY = "quickMessages.nodePositions.v1";
 
   // Change these to your own credentials
   QM.ALLOWED_EMAIL = "admin@example.com";
