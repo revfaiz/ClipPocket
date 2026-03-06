@@ -213,6 +213,30 @@ input[type="search"] {
   min-width: 0;
 }
 
+.cardTitle {
+  width: min(220px, 28vw);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 86%, transparent);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+}
+
+.cardTitle:focus {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.cardTitle::placeholder {
+  color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+
+.cardTitle {
+  min-width: 120px;
+}
+
 .dragHandle {
   display: inline-flex;
   align-items: center;

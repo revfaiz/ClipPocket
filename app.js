@@ -1,5 +1,5 @@
 (() => {
-  /** @typedef {{ id: string, text: string, createdAt: number, updatedAt: number }} MessageNode */
+  /** @typedef {{ id: string, title: string, text: string, createdAt: number, updatedAt: number }} MessageNode */
   const STORAGE_KEY = "quickMessages.nodes.v1";
   const THEME_KEY = "quickMessages.theme.v1";
 
@@ -61,6 +61,7 @@
         .filter((x) => x && typeof x.id === "string")
         .map((x) => ({
           id: String(x.id),
+          title: typeof x.title === "string" ? x.title : "",
           text: typeof x.text === "string" ? x.text : "",
           createdAt: typeof x.createdAt === "number" ? x.createdAt : now(),
           updatedAt: typeof x.updatedAt === "number" ? x.updatedAt : now(),
@@ -118,9 +119,13 @@
     }
   }
 
-  function matchesSearch(text, q) {
+  function matchesSearch(node, q) {
     if (!q) return true;
-    return text.toLowerCase().includes(q.toLowerCase());
+    const needle = q.toLowerCase();
+    return (
+      (node.title || "").toLowerCase().includes(needle) ||
+      (node.text || "").toLowerCase().includes(needle)
+    );
   }
 
   function updateEmptyState(visibleCount) {
@@ -139,7 +144,7 @@
   }
 
   function render() {
-    const filtered = nodes.filter((n) => matchesSearch(n.text, searchTerm));
+    const filtered = nodes.filter((n) => matchesSearch(n, searchTerm));
     gridEl.innerHTML = "";
 
     for (const n of filtered) {
@@ -168,9 +173,34 @@
       meta.className = "meta";
       meta.title = "Last updated";
       meta.textContent =
-        "Updated " + formatTime(n.updatedAt) + " • " + clamp(n.text.replace(/\s+/g, " "), 32);
+        "Updated " +
+        formatTime(n.updatedAt) +
+        " • " +
+        clamp((n.title ? n.title + " — " : "") + n.text.replace(/\s+/g, " "), 44);
+
+      const titleInput = document.createElement("input");
+      titleInput.type = "text";
+      titleInput.className = "cardTitle";
+      titleInput.placeholder = "Title (optional)";
+      titleInput.value = n.title || "";
+      titleInput.addEventListener("input", () => {
+        const idx = nodes.findIndex((x) => x.id === n.id);
+        if (idx < 0) return;
+        nodes[idx] = { ...nodes[idx], title: titleInput.value, updatedAt: now() };
+        save();
+        meta.textContent =
+          "Updated " +
+          formatTime(nodes[idx].updatedAt) +
+          " • " +
+          clamp(
+            (titleInput.value ? titleInput.value + " — " : "") +
+              ta.value.replace(/\s+/g, " "),
+            44
+          );
+      });
 
       left.appendChild(dragHandle);
+      left.appendChild(titleInput);
       left.appendChild(meta);
 
       const actions = document.createElement("div");
@@ -213,7 +243,11 @@
           "Updated " +
           formatTime(nodes[idx].updatedAt) +
           " • " +
-          clamp(ta.value.replace(/\s+/g, " "), 32);
+          clamp(
+            (titleInput.value ? titleInput.value + " — " : "") +
+              ta.value.replace(/\s+/g, " "),
+            44
+          );
       });
 
       // Clicking the card focuses editor for quick editing
@@ -262,7 +296,7 @@
 
   function addNewNode(initialText = "") {
     const ts = now();
-    const n = { id: uid(), text: initialText, createdAt: ts, updatedAt: ts };
+    const n = { id: uid(), title: "", text: initialText, createdAt: ts, updatedAt: ts };
     nodes.unshift(n);
     save();
     render();
